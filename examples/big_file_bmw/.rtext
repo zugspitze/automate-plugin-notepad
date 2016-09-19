@@ -1,0 +1,2 @@
+*.atm:
+cmd /c automate-rtext-service -m 4.1.1 "."
