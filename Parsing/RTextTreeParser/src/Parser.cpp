@@ -50,7 +50,7 @@ namespace RText
         _numberOfNodeLines = numberOfNodeLines;
     }
 
-    Parser::Parser(std::vector<char> & file) :
+    Parser::Parser() :
         _currentLineNumber(0U),
         _currentPosition(0U)
     {
@@ -68,27 +68,22 @@ namespace RText
         
         auto t = InternalTokenType{ sm[0], _currentPosition, _currentLineNumber };
 
-        _currentPosition += t.context.length();
+        _currentPosition += t._context.length();
 
         return t;
     }
 
-    RTextNode * Parser::CreateRTextNodeTree()
+    RTextNode * Parser::CreateRTextNodeTree(std::vector<char> & file)
     {
         std::string line;
 
-        auto rootNode = nullptr;
+        auto rootNode = new RTextNode(0, 0);
+        auto currentTokenType = TokenType_Unknown;
 
-        //while (std::getline(_file, line))
-        //{
-        //    line = Trim(line);
-        //    ++_currentLineNumber;
-        //    if (line.empty() || LookNextToken(TokenType_Comment, line) || LookNextToken(TokenType_Notation, line))
-        //    {
-        //        continue;
-        //    }
-        //    if (LookNextToken(TokenType_Identifier, line) || )
-        //}
+        for (auto c : file)
+        {
+
+        }
 
         return rootNode;
     }

@@ -41,5 +41,7 @@ int main(int argc, char* argv[])
 
     atmFile.assign(std::istreambuf_iterator<char>(atm_file), std::istreambuf_iterator<char>());
 
-    RText::Parser aParser(atmFile);
+    RText::Parser aParser;
+
+    aParser.CreateRTextNodeTree(atmFile);
 }

@@ -32,7 +32,7 @@ namespace RText
     class Parser
     {
     public:
-        Parser(std::vector<char> & file);
+        Parser();
 
         enum TokenType
         {
@@ -54,16 +54,17 @@ namespace RText
             TokenType_Template,
             TokenType_Error,
             TokenType_NewLine,
-            TokenType_Max_Number
+            TokenType_Max_Number,
+            TokenType_Unknown
         };
 
-        RTextNode * CreateRTextNodeTree();
+        RTextNode * CreateRTextNodeTree(std::vector<char> & file);
     private:
         struct InternalTokenType
         {
-            std::string context;
-            unsigned _position;
-            unsigned _line;
+            std::string _context;
+            unsigned    _position;
+            unsigned    _line;
         };
 
         int _currentLineNumber;
