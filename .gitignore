@@ -2,3 +2,4 @@ examples/big_file_bmw/.mcache/
 Parsing/RTextTreeParser/Debug/
 Parsing/RTextTreeParserTest/Debug/
 *.sdf
+*.opensdf

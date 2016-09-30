@@ -3,93 +3,93 @@
 namespace RText
 {
     const std::regex Parser::REGEX_MAP[] = {
-        std::regex("^[ \\t]+"),
-        std::regex("^#.*"),
-        std::regex("^@.*"),
-        std::regex("^\\w*(?:[/]\\w*)+"),
-        std::regex("^[-+]?\\d+\\.\\d+(?:e[+-]\\d+)?\\b"),
-        std::regex("^(?:0x[0-9a-f]+|[-+]?\\\\d+)\\b"),
-        std::regex("^(""|')(?:\\\1|.)*?\\\\1"),
-        std::regex("^(?:true|false)\\b"),
-        std::regex("^\\w+:"),
-        std::regex("^[a-z_]\\w*(?=\\s*[^:]|)"),
-        std::regex("^]"),
-        std::regex("^\\["),
-        std::regex("^}"),
-        std::regex("^{"),
-        std::regex("^,"),
-        std::regex("^(?:<%((?:(?!%>).)*)%>|<([^>]*)>)"),
-        std::regex("^[\\S+]"),
-        std::regex("^\\r|\\n|\\r\\n")
+          std::regex("^[ \\t]+"),
+          std::regex("^#.*"),
+          std::regex("^@.*"),
+          std::regex("^\\w*(?:[/]\\w*)+"),
+          std::regex("^[-+]?\\d+\\.\\d+(?:e[+-]\\d+)?\\b"),
+          std::regex("^(?:0x[0-9a-f]+|[-+]?\\\\d+)\\b"),
+          std::regex("^(""|')(?:\\\1|.)*?\\\\1"),
+          std::regex("^(?:true|false)\\b"),
+          std::regex("^\\w+:"),
+          std::regex("^[a-z_]\\w*(?=\\s*[^:]|)"),
+          std::regex("^\\]"),
+          std::regex("^\\["),
+          std::regex("^\\}"),
+          std::regex("^\\{"),
+          std::regex("^,"),
+          std::regex("^(?:<%((?:(?!%>).)*)%>|<([^>]*)>)"),
+          std::regex("^[\\S+]"),
+          std::regex("^\\r|\\n|\\r\\n")
     };
 
-    Parser::RTextNode::RTextNode(int const lineNumber, int const numberOfNodeLines) : 
+    RTextNode::RTextNode(int const lineNumber, int const numberOfNodeLines, RTextNode * parent) :
         _lineNumber(lineNumber),
-        _numberOfNodeLines(numberOfNodeLines)
+        _numberOfNodeLines(numberOfNodeLines),
+        _parent(parent)
     {
-
     }
 
-    int Parser::RTextNode::getLineNumber()const
+    int RTextNode::getLineNumber()const
     {
         return _lineNumber;
     }
 
-    int Parser::RTextNode::getNumberOfNodeLines()const
+    int RTextNode::getNumberOfNodeLines()const
     {
         return _numberOfNodeLines;
     }
 
-    void Parser::RTextNode::setLineNumber(int const lineNumber)
+    void RTextNode::setLineNumber(int const lineNumber)
     {
         _lineNumber = lineNumber;
     }
 
-    void Parser::RTextNode::setNumberOfNodeLines(int const numberOfNodeLines)
+    void RTextNode::setNumberOfNodeLines(int const numberOfNodeLines)
     {
         _numberOfNodeLines = numberOfNodeLines;
     }
 
-    Parser::Parser(std::vector< std::string> fileLines)
+    Parser::Parser(std::vector<char> & file) :
+        _currentLineNumber(0U),
+        _currentPosition(0U)
     {
-        std::vector<std::string> aJoinedLines(fileLines.size());
+    }
+
+    bool Parser::LookNextToken(TokenType const type, std::string const line)const
+    {
+        return std::regex_match(line, REGEX_MAP[type]);
+    }
+
+    Parser::InternalTokenType Parser::GetNextToken(TokenType const type, std::string const line)
+    {
+        std::smatch sm;
+        std::regex_match(line.begin() + _currentPosition, line.end(), sm, REGEX_MAP[type]);
         
-        JoinLines(fileLines, aJoinedLines);
+        auto t = InternalTokenType{ sm[0], _currentPosition, _currentLineNumber };
+
+        _currentPosition += t.context.length();
+
+        return t;
     }
 
-    Parser::Parser(std::istringstream fileLines)
+    RTextNode * Parser::CreateRTextNodeTree()
     {
+        std::string line;
 
-    }
+        auto rootNode = nullptr;
 
-    std::vector< std::string > Parser::JoinLines(std::vector< std::string> const & fileLines, std::vector< std::string> & joinedLines)const
-    {
-        bool aIsBroken    = false;
-        int aCurrentIndex = 0;
-        int count         = fileLines.size();
+        //while (std::getline(_file, line))
+        //{
+        //    line = Trim(line);
+        //    ++_currentLineNumber;
+        //    if (line.empty() || LookNextToken(TokenType_Comment, line) || LookNextToken(TokenType_Notation, line))
+        //    {
+        //        continue;
+        //    }
+        //    if (LookNextToken(TokenType_Identifier, line) || )
+        //}
 
-        for (auto & line : fileLines)
-        {
-            --count;
-            auto trimmed = Trim(line);
-            bool aWasBroken = aIsBroken;
-
-            if (!trimmed.empty())
-            {
-                if (trimmed[0] == '@' || trimmed[0] == '#')
-                {
-                    continue;
-                }
-                //need to check if "previous joined line" is also a label...just check last line - it's already joined
-                bool isPreviousLineLabel = (aCurrentIndex >= 0) && (joinedLines[aCurrentIndex] != null) && COMMAND_LABEL_REGEX.Match((joinedLines[aCurrentIndex].ToString())).Success;
-                aIsBroken = !isPreviousLineLabel && ((trimmed.Last() == '[' && !COMMAND_LABEL_REGEX.Match(trimmed).Success) || trimmed.Last() == ',' || trimmed.Last() == '\\');
-                //handle closing bracket after last element
-                if (trimmed.First() == ']' && aCurrentIndex > 0 && (aJoinedLines[aCurrentIndex] != null && aJoinedLines[aCurrentIndex].ToString().Contains('[')))
-                {
-                    aWasBroken = true;
-                    --aCurrentIndex;
-                }
-            }
-        }
+        return rootNode;
     }
 }

@@ -4,66 +4,80 @@
 #include <string>
 #include <vector>
 #include <regex>
-#include <sstream>
+#include <fstream>
 #include <ctype.h>
 
 namespace RText
 {
+    class RTextNode
+    {
+    public:
+        RTextNode(int const lineNumber, int const numberOfNodeLines, RTextNode * parent = nullptr);
+
+        int getLineNumber()const;
+
+        int getNumberOfNodeLines()const;
+
+        void setLineNumber(int const lineNumber);
+
+        void setNumberOfNodeLines(int const numberOfNodeLines);
+
+    private:
+        int         _lineNumber;
+        int         _numberOfNodeLines;
+        RTextNode * _parent;
+        std::vector< RTextNode * > _children;
+    };
+
     class Parser
     {
     public:
-        Parser(std::vector< std::string> fileLines);
+        Parser(std::vector<char> & file);
 
-        Parser(std::istringstream fileLines);
-
-        class RTextNode
+        enum TokenType
         {
-        public:
-            RTextNode(int const lineNumber, int const numberOfNodeLines);
-
-            int getLineNumber()const;
-
-            int getNumberOfNodeLines()const;
-
-            void setLineNumber(int const lineNumber);
-
-            void setNumberOfNodeLines(int const numberOfNodeLines);
-
-        private:
-            int _lineNumber;
-            int _numberOfNodeLines;
+            TokenType_Space,
+            TokenType_Comment,
+            TokenType_Notation,
+            TokenType_Reference,
+            TokenType_Float,
+            TokenType_Integer,
+            TokenType_QuotedString,
+            TokenType_Boolean,
+            TokenType_Label,
+            TokenType_Identifier,
+            TokenType_RightBracket,
+            TokenType_LeftBracket,
+            TokenType_RightAngleBracket,
+            TokenType_LeftAngleBracket,
+            TokenType_Comma,
+            TokenType_Template,
+            TokenType_Error,
+            TokenType_NewLine,
+            TokenType_Max_Number
         };
+
+        RTextNode * CreateRTextNodeTree();
     private:
-        enum Token
+        struct InternalTokenType
         {
-            Token_Space,
-            Token_Comment,
-            Token_Notation,
-            Token_Reference,
-            Token_Float,
-            Token_Integer,
-            Token_QuotedString,
-            Token_Boolean,
-            Token_Label,
-            Token_Identifier,
-            Token_RightBracket,
-            Token_LeftBracket,
-            Token_RightAngleBracket,
-            Token_LeftAngleBracket,
-            Token_Comma,
-            Token_Template,
-            Token_Error,
-            Token_NewLine,
-            Token_Max_Number
+            std::string context;
+            unsigned _position;
+            unsigned _line;
         };
+
+        int _currentLineNumber;
+        unsigned int _currentPosition;
 
         static const std::regex REGEX_MAP[];
 
-        std::vector< std::string > JoinLines(std::vector< std::string> const & fileLines, std::vector< std::string> & joinedLines)const;
-
         std::string Trim(const std::string &s)const;
 
-        bool isLineExtended(std::string const & line)const;
+        bool IsLineExtended(std::string const & line)const;
+
+        bool LookNextToken(TokenType const type, std::string const line)const;
+
+        InternalTokenType GetNextToken(TokenType const type, std::string const line);
     };
 
     inline std::string Parser::Trim(const std::string &s)const
@@ -72,7 +86,7 @@ namespace RText
         return std::string(wsfront, std::find_if_not(s.rbegin(), std::string::const_reverse_iterator(wsfront), [](int c){return ::isspace(c); }).base());
     }
 
-    inline bool Parser::isLineExtended(std::string const & line)const
+    inline bool Parser::IsLineExtended(std::string const & line)const
     {
         if (line.empty())
         {
